@@ -20,38 +20,66 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdbool.h>
 #ifndef PINTOS_LIST
 #error "PINTOS_LIST must be #define'd when compiling word_count_l.c"
 #endif
 
 #include "word_count.h"
 
-void init_words(word_count_list_t* wclist) { /* TODO */
+void init_words(word_count_list_t* wclist) {
+  /* TODO */
+  list_init(wclist);
 }
 
 size_t len_words(word_count_list_t* wclist) {
   /* TODO */
-  return 0;
+  return list_size(wclist);
 }
 
 word_count_t* find_word(word_count_list_t* wclist, char* word) {
   /* TODO */
+  struct list_elem* e;
+  for (e = list_begin(wclist); e != list_end(wclist); e = list_next(e)) {
+    word_count_t* f = list_entry(e, word_count_t, elem);
+    if (strcmp(f->word, word) == 0) {
+      return f;
+    }
+  }
   return NULL;
 }
 
 word_count_t* add_word(word_count_list_t* wclist, char* word) {
   /* TODO */
-  return NULL;
+  word_count_t* word_elem = find_word(wclist, word);
+  if (word_elem == NULL) {
+    word_elem = malloc(sizeof(word_count_t));
+    word_elem->word = word;
+    word_elem->count = 0;
+    list_push_front(wclist, &word_elem->elem);
+  }
+  word_elem->count += 1;
+  return word_elem;
 }
 
 void fprint_words(word_count_list_t* wclist, FILE* outfile) {
   /* TODO */
   /* Please follow this format: fprintf(<file>, "%i\t%s\n", <count>, <word>); */
+  struct list_elem* e;
+  for (e = list_begin(wclist); e != list_end(wclist); e = list_next(e)) {
+    word_count_t* word_elem = list_entry(e, word_count_t, elem);
+    fprintf(outfile, "%8i\t%s\n", word_elem->count, word_elem->word);
+  }
 }
 
 static bool less_list(const struct list_elem* ewc1, const struct list_elem* ewc2, void* aux) {
   /* TODO */
-  return false;
+  word_count_t* word1 = list_entry(ewc1, word_count_t, elem);
+  word_count_t* word2 = list_entry(ewc2, word_count_t, elem);
+  if (word1->count == word2->count) {
+    return strcmp(word1->word, word2->word) < 0;
+  }
+  return word1->count < word2->count;
 }
 
 void wordcount_sort(word_count_list_t* wclist,
